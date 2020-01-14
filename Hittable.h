@@ -2,6 +2,7 @@
 #define _HITTABLE_
 
 #include "Ray.h"
+#include "AABB.h"
 
 namespace SNY
 {
@@ -24,6 +25,9 @@ class Hittable
 public:
     virtual ~Hittable() {}
     virtual bool Hit(const Ray &r, REAL minT, REAL maxT, HitInfo &hi) const = 0;
+    virtual AABB3D GetBoundingBox(REAL time0, REAL time1) const = 0;
+
+    virtual void DebugOutput() const = 0;
 };
 } // namespace SNY
 

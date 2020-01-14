@@ -36,6 +36,23 @@ public:
         }
         return isHit;
     }
+    virtual AABB3D GetBoundingBox(REAL time0, REAL time1) const
+    {
+        AABB3D entireBox;
+        for (int i = 0; i < list.size(); ++i)
+        {
+            AABB3D box = list[i]->GetBoundingBox(time0, time1);
+            entireBox = CombineBoundingBox(entireBox, box);
+        }
+        return entireBox;
+    }
+    virtual void DebugOutput() const
+    {
+        for (int i = 0; i < list.size(); ++i)
+        {
+            list[i]->DebugOutput();
+        }
+    }
 
     vector<Hittable *> list;
 };

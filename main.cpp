@@ -6,23 +6,24 @@
 #include "Vector.h"
 #include "Camera.h"
 #include "HittableList.h"
+#include "BVH.h"
 #include "Sphere.h"
 
 using namespace SNY;
 
 const int maxDepth = 10;
 
-Vector3R ComputeColor(const Ray &r, HittableList &w, int depth)
+Vector3R ComputeColor(const Ray &ray, Hittable *world, int depth)
 {
     HitInfo hi;
-    if (w.Hit(r, 0.001, FLT_MAX, hi))
+    if (world->Hit(ray, 0.001, FLT_MAX, hi))
     {
         Ray scattered;
         Vector3R attenuation;
 
-        if (depth < maxDepth && hi.pMaterial->Scatter(r, hi, attenuation, scattered))
+        if (depth < maxDepth && hi.pMaterial->Scatter(ray, hi, attenuation, scattered))
         {
-            return attenuation * ComputeColor(scattered, w, depth + 1);
+            return attenuation * ComputeColor(scattered, world, depth + 1);
         }
         else
         {
@@ -31,7 +32,7 @@ Vector3R ComputeColor(const Ray &r, HittableList &w, int depth)
     }
     else
     {
-        Vector3R unitDirection = glm::normalize(r.direction);
+        Vector3R unitDirection = glm::normalize(ray.direction);
         REAL k = 0.5 * (unitDirection.y + 1.0);
         return (1.0f - k) * Vector3R(1.0, 1.0, 1.0) + k * Vector3R(0.5, 0.7, 1.0);
     }
@@ -50,12 +51,15 @@ int main(int argc, char *argv[])
     Vector3R lookAt(0, 0, -1.0);
     Camera camera(camPos, lookAt, Vector3R(0, 1.0, 0), 60.0, float(nw) / float(nh), 1.0, glm::length(camPos - lookAt), 0, 1.0);
 
-    HittableList world;
-    world.Add(new Sphere(Vector3R(0, 0, -1.0), Vector3R(0.2, 0, -1.0), 0.5, 0, 1.0, new Lambertian(Vector3R(0.1, 0.2, 0.5))));
-    world.Add(new Sphere(Vector3R(0, -100.5, -1.0), Vector3R(0, -100.5, -1.0), 100.0, 0, 1.0, new Lambertian(Vector3R(0.8, 0.8, 0))));
-    world.Add(new Sphere(Vector3R(1.0, 0, -1.0), Vector3R(1.2, 0, -1.0), 0.5, 0, 1.0, new Metal(Vector3R(0.8, 0.6, 0.2), 0.3)));
-    world.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), 0.5, 0, 1.0, new Dielectric(1.5)));
-    world.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), -0.45, 0, 1.0, new Dielectric(1.5)));
+    HittableList list;
+    list.Add(new Sphere(Vector3R(0, 0, -1.0), Vector3R(0.2, 0, -1.0), 0.5, 0, 1.0, new Lambertian(Vector3R(0.1, 0.2, 0.5))));
+    list.Add(new Sphere(Vector3R(0, -100.5, -1.0), Vector3R(0, -100.5, -1.0), 100.0, 0, 1.0, new Lambertian(Vector3R(0.8, 0.8, 0))));
+    list.Add(new Sphere(Vector3R(1.0, 0, -1.0), Vector3R(1.2, 0, -1.0), 0.5, 0, 1.0, new Metal(Vector3R(0.8, 0.6, 0.2), 0.3)));
+    list.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), 0.5, 0, 1.0, new Dielectric(1.5)));
+    list.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), -0.45, 0, 1.0, new Dielectric(1.5)));
+    // Hittable *world = new BVHNode(list.list.data(), list.list.size(), 0, 1.0);
+    // world->DebugOutput();
+    Hittable *world = &list;
 
     StartTiming("Ray tracing");
     for (size_t i = 0; i < nh; ++i)

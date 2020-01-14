@@ -43,6 +43,18 @@ public:
         }
         return false;
     }
+    virtual AABB3D GetBoundingBox(REAL time0, REAL time1) const
+    {
+        AABB3D box0(GetCenter(time0) - Vector3R(radius, radius, radius),
+                    GetCenter(time0) + Vector3R(radius, radius, radius));
+        AABB3D box1(GetCenter(time1) - Vector3R(radius, radius, radius),
+                    GetCenter(time1) + Vector3R(radius, radius, radius));
+        return CombineBoundingBox(box0, box1);
+    }
+    virtual void DebugOutput() const
+    {
+        cout << "Sphere: " << center0 << ", " << radius << endl;
+    }
     Vector3R GetCenter(REAL t) const
     {
         return center0 + ((t - time0) / (time1 - time0)) * (center1 - center0);
