@@ -10,19 +10,24 @@ class Material;
 
 struct HitInfo
 {
-    HitInfo() : t(0), position(Vector3R(0, 0, 0)), normal(Vector3R(0, 0, 0)), pMaterial(nullptr) {}
-    HitInfo(REAL _t, const Vector3R &p, const Vector3R &n, Material *pMat) : t(_t), position(p), normal(n), pMaterial(pMat) {}
+    HitInfo() {}
+    HitInfo(REAL _t, const Vector2R &_uv, const Vector3R &p, const Vector3R &n, shared_ptr<Material> pMat) : t(_t), uv(_uv), position(p), normal(n), pMaterial(pMat)
+    {
+        assert(pMaterial);
+    }
     ~HitInfo() {}
 
-    REAL t;
-    Vector3R position;
-    Vector3R normal;
-    Material *pMaterial;
+    REAL t = 0;
+    Vector2R uv = Vector2R(0, 0);
+    Vector3R position = Vector3R(0, 0, 0);
+    Vector3R normal = Vector3R(0, 0, 0);
+    shared_ptr<Material> pMaterial = nullptr;
 };
 
 class Hittable
 {
 public:
+    Hittable() {}
     virtual ~Hittable() {}
     virtual bool Hit(const Ray &r, REAL minT, REAL maxT, HitInfo &hi) const = 0;
     virtual AABB3D GetBoundingBox(REAL time0, REAL time1) const = 0;

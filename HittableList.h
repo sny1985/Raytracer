@@ -11,14 +11,11 @@ public:
     HittableList() {}
     virtual ~HittableList()
     {
-        for (size_t i = 0; i < list.size(); ++i)
-        {
-            delete list[i];
-        }
     }
     void Add(Hittable *pH)
     {
-        list.push_back(pH);
+        assert(pH);
+        list.push_back(shared_ptr<Hittable>(pH));
     }
     virtual bool Hit(const Ray &r, REAL minT, REAL maxT, HitInfo &hi) const
     {
@@ -54,7 +51,7 @@ public:
         }
     }
 
-    vector<Hittable *> list;
+    vector<shared_ptr<Hittable>> list;
 };
 } // namespace SNY
 

@@ -34,8 +34,8 @@ public:
         return true;
     }
 
-    Vector3R minPoint;
-    Vector3R maxPoint;
+    Vector3R minPoint = Vector3R(0, 0, 0);
+    Vector3R maxPoint = Vector3R(0, 0, 0);
 };
 
 inline AABB3D CombineBoundingBox(const AABB3D &box0, const AABB3D &box1)

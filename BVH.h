@@ -35,7 +35,7 @@ class BVHNode : public Hittable
 {
 public:
     BVHNode() {}
-    BVHNode(Hittable **hl, int n, REAL time0, REAL time1)
+    BVHNode(shared_ptr<Hittable> *hl, int n, REAL time0, REAL time1)
     {
         int axis = int(3 * RandomReal());
 
@@ -56,24 +56,24 @@ public:
 
         if (n == 1)
         {
-            left = hl[0];
-            right = nullptr;
+            pLeft = hl[0];
+            pRight = nullptr;
         }
         else if (n == 2)
         {
-            left = hl[0];
-            right = hl[1];
+            pLeft = hl[0];
+            pRight = hl[1];
         }
         else
         {
-            left = new BVHNode(hl, n / 2, time0, time1);
-            right = new BVHNode(hl + n / 2, n - n / 2, time0, time1);
+            pLeft.reset(new BVHNode(hl, n / 2, time0, time1));
+            pRight.reset(new BVHNode(hl + n / 2, n - n / 2, time0, time1));
         }
 
-        box = left->GetBoundingBox(time0, time1);
-        if (right)
+        box = pLeft->GetBoundingBox(time0, time1);
+        if (pRight)
         {
-            AABB3D rightBox = right->GetBoundingBox(time0, time1);
+            AABB3D rightBox = pRight->GetBoundingBox(time0, time1);
             box = CombineBoundingBox(box, rightBox);
         }
     }
@@ -85,11 +85,12 @@ public:
             HitInfo leftHi, rightHi;
             bool isLeftHit = false;
             bool isRightHit = false;
-            isLeftHit = left->Hit(r, minT, maxT, leftHi);
-            if (right)
+            isLeftHit = pLeft->Hit(r, minT, maxT, leftHi);
+            if (pRight)
             {
-                isRightHit = right->Hit(r, minT, maxT, rightHi);
+                isRightHit = pRight->Hit(r, minT, maxT, rightHi);
             }
+
             if (isLeftHit && isRightHit)
             {
                 hi = leftHi.t < rightHi.t ? hi = leftHi : hi = rightHi;
@@ -121,18 +122,18 @@ public:
     }
     virtual void DebugOutput() const
     {
-        if (left)
+        if (pLeft)
         {
-            left->DebugOutput();
+            pLeft->DebugOutput();
         }
-        if (right)
+        if (pRight)
         {
-            right->DebugOutput();
+            pRight->DebugOutput();
         }
     }
 
-    Hittable *left;
-    Hittable *right;
+    shared_ptr<Hittable> pLeft = nullptr;
+    shared_ptr<Hittable> pRight = nullptr;
     AABB3D box;
 };
 } // namespace SNY

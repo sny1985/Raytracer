@@ -45,18 +45,18 @@ int main(int argc, char *argv[])
     size_t nc = 3;
     size_t ns = 32;
 
-    UCHAR *data = new UCHAR[nw * nh * nc];
+    vector<UCHAR> data(nw * nh * nc);
 
     Vector3R camPos(3.0, 3.0, 2.0);
     Vector3R lookAt(0, 0, -1.0);
-    Camera camera(camPos, lookAt, Vector3R(0, 1.0, 0), 60.0, float(nw) / float(nh), 1.0, glm::length(camPos - lookAt), 0, 1.0);
+    Camera camera(camPos, lookAt, Vector3R(0, 1.0, 0), 60.0, float(nw) / float(nh), 0, glm::length(camPos - lookAt), 0, 1.0);
 
     HittableList list;
-    list.Add(new Sphere(Vector3R(0, 0, -1.0), Vector3R(0.2, 0, -1.0), 0.5, 0, 1.0, new Lambertian(Vector3R(0.1, 0.2, 0.5))));
-    list.Add(new Sphere(Vector3R(0, -100.5, -1.0), Vector3R(0, -100.5, -1.0), 100.0, 0, 1.0, new Lambertian(Vector3R(0.8, 0.8, 0))));
-    list.Add(new Sphere(Vector3R(1.0, 0, -1.0), Vector3R(1.2, 0, -1.0), 0.5, 0, 1.0, new Metal(Vector3R(0.8, 0.6, 0.2), 0.3)));
-    list.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), 0.5, 0, 1.0, new Dielectric(1.5)));
-    list.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), -0.45, 0, 1.0, new Dielectric(1.5)));
+    list.Add(new Sphere(Vector3R(0, 0, -1.0), Vector3R(0.2, 0, -1.0), 0.5, 0, 0, new Lambertian(new CheckerTexture(new ConstantTexture(Vector3R(0.2, 0.3, 0.1)), new ConstantTexture(Vector3R(0.9, 0.9, 0.9))))));
+    list.Add(new Sphere(Vector3R(0, -100.5, -1.0), Vector3R(0, -100.5, -1.0), 100.0, 0, 0, new Lambertian(new ImageTexture(L"earthmap.jpg"))));
+    list.Add(new Sphere(Vector3R(1.0, 0, -1.0), Vector3R(1.2, 0, -1.0), 0.5, 0, 0, new Metal(new ConstantTexture(Vector3R(0.8, 0.6, 0.2)), 0.3)));
+    list.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), 0.5, 0, 0, new Dielectric(1.5)));
+    list.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), -0.45, 0, 0, new Dielectric(1.5)));
     // Hittable *world = new BVHNode(list.list.data(), list.list.size(), 0, 1.0);
     // world->DebugOutput();
     Hittable *world = &list;
@@ -81,10 +81,8 @@ int main(int argc, char *argv[])
             data[index + 2] = int(255.99 * sqrt(c.z));
         }
     }
-    stbi_write_bmp("raytracer.bmp", nw, nh, nc, data);
+    stbi_write_bmp("raytracer.bmp", nw, nh, nc, data.data());
     EndTiming("Ray tracing");
-
-    delete[] data;
 
     return 0;
 }

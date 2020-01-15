@@ -19,6 +19,7 @@ inline Vector3R GenerateRandomPointOnUnitDisk()
 class Camera
 {
 public:
+    Camera() {}
     Camera(const Vector3R &position, const Vector3R &lookAt, const Vector3R &up, REAL fov, REAL aspect, REAL aperture, REAL focalLength, REAL t0, REAL t1) : origin(position), time0(t0), time1(t1)
     {
         REAL theta = fov * glm::pi<REAL>() / 180.0;
@@ -40,16 +41,16 @@ public:
         return Ray(origin + offset, lowerLeftCorner + u * horizontal + v * vertical - origin - offset, time0 + RandomReal() * (time1 - time0));
     }
 
-    Vector3R origin;
-    Vector3R lowerLeftCorner;
-    Vector3R horizontal;
-    Vector3R vertical;
-    Vector3R forward;
-    Vector3R rightward;
-    Vector3R upward;
-    REAL lensRadius;
-    REAL time0;
-    REAL time1;
+    Vector3R origin = Vector3R(0, 0, 0);
+    Vector3R lowerLeftCorner = Vector3R(0, 0, 0);
+    Vector3R horizontal = Vector3R(0, 0, 0);
+    Vector3R vertical = Vector3R(0, 0, 0);
+    Vector3R forward = Vector3R(0, 0, 0);
+    Vector3R rightward = Vector3R(0, 0, 0);
+    Vector3R upward = Vector3R(0, 0, 0);
+    REAL lensRadius = 0;
+    REAL time0 = 0;
+    REAL time1 = 0;
 };
 } // namespace SNY
 

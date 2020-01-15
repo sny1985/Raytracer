@@ -1,9 +1,10 @@
 #ifndef _MATERIAL_
 #define _MATERIAL_
 
+#include "Utility.h"
+#include "Texture.h"
 #include "Ray.h"
 #include "Hittable.h"
-#include "Utility.h"
 
 namespace SNY
 {
@@ -100,41 +101,49 @@ public:
 class Lambertian : public Material
 {
 public:
-    Lambertian(const Vector3R &a) : albedo(a) {}
+    Lambertian() {}
+    Lambertian(Texture *pTex) : pTexture(pTex)
+    {
+        assert(pTexture);
+    }
     virtual ~Lambertian() {}
     virtual bool Scatter(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const
     {
         out = Ray(hi.position, hi.normal + GenerateRandomPointOnUnitSphere(), in.time);
-        attenuation = albedo;
+        attenuation = pTexture->ComputeColor(hi.uv, hi.position);
         return true;
     }
 
-    Vector3R albedo;
+    shared_ptr<Texture> pTexture = nullptr;
 };
 
 class Metal : public Material
 {
 public:
-    Metal(const Vector3R &a, REAL f) : albedo(a), fuzz(f)
+    Metal() {}
+    Metal(Texture *pTex, REAL f) : pTexture(pTex), fuzz(f)
     {
+        assert(pTexture);
         fuzz = fuzz < 1.0 ? fuzz : 1.0;
     }
     virtual ~Metal() {}
     virtual bool Scatter(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const
     {
         out = Ray(hi.position, Reflect(in.direction, hi.normal) + fuzz * GenerateRandomPointOnUnitSphere(), in.time);
-        attenuation = albedo;
+        attenuation = pTexture->ComputeColor(hi.uv, hi.position);
         return (glm::dot(out.direction, hi.normal) > 0);
     }
 
-    Vector3R albedo;
-    REAL fuzz;
+    shared_ptr<Texture> pTexture = nullptr;
+    REAL fuzz = 0;
 };
 
 class Dielectric : public Material
 {
 public:
+    Dielectric() {}
     Dielectric(REAL ri) : refractiveIndex(ri) {}
+    virtual ~Dielectric() {}
     virtual bool Scatter(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const
     {
         Vector3R outwardNormal;
@@ -184,7 +193,7 @@ public:
     // {
     // }
 
-    REAL refractiveIndex;
+    REAL refractiveIndex = 1.0;
 };
 } // namespace SNY
 
