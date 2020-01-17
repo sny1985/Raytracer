@@ -13,6 +13,8 @@
 
 using namespace std;
 
+namespace SNY
+{
 #define TOSTRING(src) #src
 
 #define REAL float
@@ -22,5 +24,11 @@ using namespace std;
 #define UINT unsigned int
 #define ULONG unsigned long
 #endif
+
+const int XAxis = 0;
+const int YAxis = 1;
+const int ZAxis = 2;
+
+} // namespace SNY
 
 #endif

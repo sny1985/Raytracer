@@ -95,7 +95,11 @@ class Material
 public:
     Material() {}
     virtual ~Material() {}
-    virtual bool Scatter(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const = 0;
+    virtual Vector3R Scatter(const Ray &in, const HitInfo &hi, Ray &out) const = 0;
+    virtual Vector3R Emit(const HitInfo &hi) const
+    {
+        return Vector3R(0, 0, 0);
+    }
 };
 
 class Lambertian : public Material
@@ -107,11 +111,10 @@ public:
         assert(pTexture);
     }
     virtual ~Lambertian() {}
-    virtual bool Scatter(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const
+    virtual Vector3R Scatter(const Ray &in, const HitInfo &hi, Ray &out) const
     {
         out = Ray(hi.position, hi.normal + GenerateRandomPointOnUnitSphere(), in.time);
-        attenuation = pTexture->ComputeColor(hi.uv, hi.position);
-        return true;
+        return pTexture->ComputeColor(hi.uv, hi.position);
     }
 
     shared_ptr<Texture> pTexture = nullptr;
@@ -127,11 +130,10 @@ public:
         fuzz = fuzz < 1.0 ? fuzz : 1.0;
     }
     virtual ~Metal() {}
-    virtual bool Scatter(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const
+    virtual Vector3R Scatter(const Ray &in, const HitInfo &hi, Ray &out) const
     {
         out = Ray(hi.position, Reflect(in.direction, hi.normal) + fuzz * GenerateRandomPointOnUnitSphere(), in.time);
-        attenuation = pTexture->ComputeColor(hi.uv, hi.position);
-        return (glm::dot(out.direction, hi.normal) > 0);
+        return pTexture->ComputeColor(hi.uv, hi.position);
     }
 
     shared_ptr<Texture> pTexture = nullptr;
@@ -144,7 +146,7 @@ public:
     Dielectric() {}
     Dielectric(REAL ri) : refractiveIndex(ri) {}
     virtual ~Dielectric() {}
-    virtual bool Scatter(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const
+    virtual Vector3R Scatter(const Ray &in, const HitInfo &hi, Ray &out) const
     {
         Vector3R outwardNormal;
         REAL eta;
@@ -163,7 +165,6 @@ public:
             cosine = -glm::dot(in.direction, hi.normal) / glm::length(in.direction);
         }
 
-        attenuation = Vector3R(1.0, 1.0, 1.0);
         Vector3R reflected = Reflect(in.direction, hi.normal);
         Vector3R refracted;
         REAL reflectProb;
@@ -186,14 +187,32 @@ public:
             out = Ray(hi.position, refracted, in.time);
         }
 
-        return true;
+        return Vector3R(1.0, 1.0, 1.0);
     }
 
-    // virtual bool Scatter2(const Ray &in, const HitInfo &hi, Vector3R &attenuation, Ray &out) const
+    // virtual Vector3R Scatter2(const Ray &in, const HitInfo &hi, Ray &out) const
     // {
     // }
 
     REAL refractiveIndex = 1.0;
+};
+
+class DiffuseLight : public Material
+{
+public:
+    DiffuseLight() {}
+    DiffuseLight(Texture *pTex) : pTexture(pTex) {}
+    virtual ~DiffuseLight() {}
+    virtual Vector3R Scatter(const Ray &in, const HitInfo &hi, Ray &out) const
+    {
+        return Vector3R(0, 0, 0);
+    }
+    virtual Vector3R Emit(const HitInfo &hi) const
+    {
+        return pTexture->ComputeColor(hi.uv, hi.position);
+    }
+
+    shared_ptr<Texture> pTexture = nullptr;
 };
 } // namespace SNY
 
