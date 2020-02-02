@@ -129,7 +129,7 @@ public:
 
     shared_ptr<Hittable> pLeft = nullptr;
     shared_ptr<Hittable> pRight = nullptr;
-    AABB3D box;
+    AABB3D box = AABB3D(Vector3R(0, 0, 0), Vector3R(0, 0, 0));
 };
 } // namespace SNY
 

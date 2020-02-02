@@ -17,6 +17,12 @@ public:
     Vector3R direction = Vector3R(0, 0, 0);
     REAL time = 0;
 };
+
+inline ostream &operator<<(ostream &os, const Ray &r)
+{
+    os << "Ray: " << r.origin << ", " << r.direction << ", " << r.time;
+    return os;
+}
 } // namespace SNY
 
 #endif

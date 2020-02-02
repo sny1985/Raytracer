@@ -9,10 +9,14 @@
 #include "BVH.h"
 #include "Sphere.h"
 #include "AARect.h"
+#include "Box.h"
+#include "Translation.h"
+#include "Rotation.h"
+#include "Scaling.h"
 
 using namespace SNY;
 
-const int maxDepth = 10;
+const int maxDepth = 5;
 
 void GenerateSimpleTextureScene(HittableList &list)
 {
@@ -23,7 +27,7 @@ void GenerateSimpleTextureScene(HittableList &list)
     list.Add(new Sphere(Vector3R(-1.0, 0, -1.0), Vector3R(-0.8, 0, -1.0), -0.45, 0, 0, new Dielectric(1.5)));
 }
 
-void GenerateSimpleLightScene(HittableList& list)
+void GenerateSimpleLightScene(HittableList &list)
 {
     list.Add(new Sphere(Vector3R(0, -1000.0, 0), Vector3R(0, -1000.0, 0), 1000.0, 0, 0, new Lambertian(new PerlinTexture(4))));
     list.Add(new Sphere(Vector3R(0, 2.0, 0), Vector3R(0, 2.0, 0), 2.0, 0, 0, new Lambertian(new PerlinTexture(2.0))));
@@ -31,7 +35,7 @@ void GenerateSimpleLightScene(HittableList& list)
     list.Add(new AARect(3.0, 5.0, 1.0, 3.0, -2.0, ZAxis, false, shared_ptr<Material>(new DiffuseLight(new ConstantTexture(Vector3R(4.0, 4.0, 4.0))))));
 }
 
-void GenerateCornelBoxScene(HittableList& list)
+void GenerateCornelBoxScene(HittableList &list)
 {
     shared_ptr<Material> pRed(new Lambertian(new ConstantTexture(Vector3R(0.65, 0.05, 0.05))));
     shared_ptr<Material> pWhite(new Lambertian(new ConstantTexture(Vector3R(0.73, 0.73, 0.73))));
@@ -43,6 +47,11 @@ void GenerateCornelBoxScene(HittableList& list)
     list.Add(new AARect(0, 555, 0, 555, 555, YAxis, true, pWhite));
     list.Add(new AARect(0, 555, 0, 555, 0, YAxis, false, pWhite));
     list.Add(new AARect(0, 555, 0, 555, 555, ZAxis, true, pWhite));
+
+    // list.Add(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 165.0, 165.0), pWhite));
+    // list.Add(new Translation(new Rotation(new Scaling(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 165.0, 165.0), pWhite), Vector3R(1.0, 1.0, 1.5)), glm::radians(-18.0), YAxis), Vector3R(130.0, 0, 65.0)));
+    list.Add(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 165.0, 165.0), pWhite), glm::radians(-18.0), YAxis), Vector3R(130.0, 0, 65.0)));
+    list.Add(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 330.0, 165.0), pWhite), glm::radians(15.0), YAxis), Vector3R(265.0, 0, 295.0)));
 }
 
 Vector3R ComputeColor(const Ray &ray, Hittable *pWorld, int depth)
@@ -76,7 +85,7 @@ int main(int argc, char *argv[])
     size_t nw = 600;
     size_t nh = 400;
     size_t nc = 3;
-    size_t ns = 32;
+    size_t ns = 10;
 
     vector<UCHAR> data(nw * nh * nc);
 

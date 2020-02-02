@@ -72,14 +72,14 @@ public:
         cout << "AARect: " << p0 << ", " << p1 << ", " << q0 << ", " << q1 << ", " << perpendicularAxis << ", " << k << endl;
     }
 
-    REAL p0;
-    REAL p1;
-    REAL q0;
-    REAL q1;
-    REAL k;
-    int perpendicularAxis;
-    int pAxis;
-    int qAxis;
+    REAL p0 = 0;
+    REAL p1 = 0;
+    REAL q0 = 0;
+    REAL q1 = 0;
+    REAL k = 0;
+    int perpendicularAxis = -1;
+    int pAxis = -1;
+    int qAxis = -1;
     Vector3R normal;
     shared_ptr<Material> pMaterial = nullptr;
 };
