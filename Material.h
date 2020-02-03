@@ -197,6 +197,19 @@ public:
     REAL refractiveIndex = 1.0;
 };
 
+class Isotropic : public Material
+{
+public:
+    Isotropic(Texture *pTex) : pTexture(pTex) {}
+    virtual Vector3R Scatter(const Ray &in, const HitInfo &hi, Ray &out) const
+    {
+        out = Ray(hi.position, GenerateRandomPointOnUnitSphere(), in.time);
+        return pTexture->ComputeColor(hi.uv, hi.position);
+    }
+
+    shared_ptr<Texture> pTexture = nullptr;
+};
+
 class DiffuseLight : public Material
 {
 public:

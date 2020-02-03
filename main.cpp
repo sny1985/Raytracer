@@ -13,6 +13,7 @@
 #include "Translation.h"
 #include "Rotation.h"
 #include "Scaling.h"
+#include "Volume.h"
 
 using namespace SNY;
 
@@ -54,6 +55,27 @@ void GenerateCornelBoxScene(HittableList &list)
     list.Add(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 330.0, 165.0), pWhite), glm::radians(15.0), YAxis), Vector3R(265.0, 0, 295.0)));
 }
 
+void GenerateSmokeCornelBoxScene(HittableList &list)
+{
+    shared_ptr<Material> pRed(new Lambertian(new ConstantTexture(Vector3R(0.65, 0.05, 0.05))));
+    shared_ptr<Material> pWhite(new Lambertian(new ConstantTexture(Vector3R(0.73, 0.73, 0.73))));
+    shared_ptr<Material> pGreen(new Lambertian(new ConstantTexture(Vector3R(0.12, 0.45, 0.15))));
+    shared_ptr<Material> pLight(new DiffuseLight(new ConstantTexture(Vector3R(15.0, 15.0, 15.0))));
+    list.Add(new AARect(0, 555, 0, 555, 555, XAxis, true, pGreen));
+    list.Add(new AARect(0, 555, 0, 555, 0, XAxis, false, pRed));
+    list.Add(new AARect(213, 343, 227, 332, 554, YAxis, false, pLight));
+    list.Add(new AARect(0, 555, 0, 555, 555, YAxis, true, pWhite));
+    list.Add(new AARect(0, 555, 0, 555, 0, YAxis, false, pWhite));
+    list.Add(new AARect(0, 555, 0, 555, 555, ZAxis, true, pWhite));
+
+    // list.Add(new ConstantMedium(
+    list.Add(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 165.0, 165.0), pWhite), glm::radians(-18.0), YAxis), Vector3R(130.0, 0, 65.0)));
+    // new ConstantTexture(Vector3R(1.0, 1.0, 1.0)), 0.01));
+    // list.Add(new ConstantMedium(
+    list.Add(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 330.0, 165.0), pWhite), glm::radians(15.0), YAxis), Vector3R(265.0, 0, 295.0)));
+    // new ConstantTexture(Vector3R(0, 0, 0)), 0.01));
+}
+
 Vector3R ComputeColor(const Ray &ray, Hittable *pWorld, int depth)
 {
     HitInfo hi;
@@ -85,7 +107,7 @@ int main(int argc, char *argv[])
     size_t nw = 600;
     size_t nh = 400;
     size_t nc = 3;
-    size_t ns = 10;
+    size_t ns = 100;
 
     vector<UCHAR> data(nw * nh * nc);
 
@@ -93,12 +115,16 @@ int main(int argc, char *argv[])
     // Vector3R lookAt(0.0, 0.0, -1.0);
     Vector3R camPos(278.0, 278.0, -800.0);
     Vector3R lookAt(278.0, 278.0, 0);
-    Camera camera(camPos, lookAt, Vector3R(0, 1.0, 0), 60.0, float(nw) / float(nh), 0, glm::length(camPos - lookAt), 0, 1.0);
+    REAL focalLength = 10.0;
+    REAL aperture = 0.0;
+    REAL fov = 40.0;
+    Camera camera(camPos, lookAt, Vector3R(0, 1.0, 0), fov, float(nw) / float(nh), aperture, focalLength, 0, 1.0);
 
     HittableList list;
     // GenerateSimpleTextureScene(list);
     // GenerateSimpleLightScene(list);
     GenerateCornelBoxScene(list);
+    // GenerateSmokeCornelBoxScene(list);
     // shared_ptr<Hittable> pWorld(new BVHNode(list.list.data(), list.list.size(), 0, 1.0));
     // pWorld->DebugOutput();
 
