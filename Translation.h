@@ -45,6 +45,7 @@ public:
         cout << "Translation:\n"
              << matrix << "\n"
              << inverseMatrix << endl;
+        pHittable->DebugOutput();
     }
 
     shared_ptr<Hittable> pHittable = nullptr;

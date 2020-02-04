@@ -30,6 +30,7 @@ public:
     virtual void DebugOutput() const
     {
         cout << "Box: " << minPoint << ", " << maxPoint << endl;
+        list.DebugOutput();
     }
 
     Vector3R minPoint = Vector3R(0, 0, 0);

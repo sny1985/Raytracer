@@ -31,19 +31,18 @@ public:
     BVHNode() {}
     BVHNode(shared_ptr<Hittable> *hl, int n, REAL time0, REAL time1)
     {
-        //TODO: something broken, makes qsort not working
         int axis = int(3 * RandomReal());
 
         switch (axis)
         {
         case 0:
-            qsort(hl, n, sizeof(Hittable *), CompareX);
+            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareX);
             break;
         case 1:
-            qsort(hl, n, sizeof(Hittable *), CompareY);
+            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareY);
             break;
         case 2:
-            qsort(hl, n, sizeof(Hittable *), CompareZ);
+            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareZ);
             break;
         default:
             break;
@@ -70,6 +69,79 @@ public:
         {
             AABB3D rightBox = pRight->GetBoundingBox(time0, time1);
             box = CombineBoundingBox(box, rightBox);
+        }
+    }
+    BVHNode(shared_ptr<Hittable> *hl, int n, REAL time0, REAL time1, bool enableSAH)
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            box = CombineBoundingBox(box, hl[i]->GetBoundingBox(time0, time1));
+        }
+        switch (box.GetLongestAxis())
+        {
+        case 0:
+            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareX);
+            break;
+        case 1:
+            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareY);
+            break;
+        case 2:
+            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareZ);
+            break;
+        default:
+            break;
+        }
+
+        vector<AABB3D> boxes(n);
+        for (int i = 0; i < n; ++i)
+        {
+            boxes[i] = hl[i]->GetBoundingBox(time0, time1);
+        }
+
+        AABB3D leftBox;
+        vector<REAL> leftArea(n);
+        for (int i = 0; i < n; ++i)
+        {
+            leftBox = CombineBoundingBox(leftBox, boxes[i]);
+            leftArea[i] = leftBox.GetArea();
+        }
+
+        AABB3D rightBox;
+        vector<REAL> rightArea(n);
+        for (int i = n - 1; i >= 0; --i)
+        {
+            rightBox = CombineBoundingBox(leftBox, boxes[i]);
+            rightArea[i] = rightBox.GetArea();
+        }
+
+        REAL minSAH = FLT_MIN;
+        int minSAHIndex = 0;
+        for (int i = 0; i < n - 1; ++i)
+        {
+            REAL SAH = i * leftArea[i] + (n - i - 1) * rightArea[i + 1];
+            if (SAH < minSAH)
+            {
+                minSAH = SAH;
+                minSAHIndex = i;
+            }
+        }
+
+        if (minSAHIndex == 0)
+        {
+            pLeft = hl[0];
+        }
+        else
+        {
+            pLeft.reset(new BVHNode(hl, minSAHIndex + 1, time0, time1, true));
+        }
+
+        if (minSAHIndex == n - 2)
+        {
+            pRight = hl[minSAHIndex + 1];
+        }
+        else
+        {
+            pRight.reset(new BVHNode(hl + minSAHIndex + 1, n - minSAHIndex - 1, time0, time1, true));
         }
     }
     ~BVHNode() {}
@@ -115,6 +187,7 @@ public:
     {
         return box;
     }
+
     virtual void DebugOutput() const
     {
         if (pLeft)

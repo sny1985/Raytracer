@@ -68,12 +68,8 @@ void GenerateSmokeCornelBoxScene(HittableList &list)
     list.Add(new AARect(0, 555, 0, 555, 0, YAxis, false, pWhite));
     list.Add(new AARect(0, 555, 0, 555, 555, ZAxis, true, pWhite));
 
-    // list.Add(new ConstantMedium(
-    list.Add(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 165.0, 165.0), pWhite), glm::radians(-18.0), YAxis), Vector3R(130.0, 0, 65.0)));
-    // new ConstantTexture(Vector3R(1.0, 1.0, 1.0)), 0.01));
-    // list.Add(new ConstantMedium(
-    list.Add(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 330.0, 165.0), pWhite), glm::radians(15.0), YAxis), Vector3R(265.0, 0, 295.0)));
-    // new ConstantTexture(Vector3R(0, 0, 0)), 0.01));
+    list.Add(new ConstantMedium(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 165.0, 165.0), pWhite), glm::radians(-18.0), YAxis), Vector3R(130.0, 0, 65.0)), new ConstantTexture(Vector3R(1.0, 1.0, 1.0)), 0.01));
+    list.Add(new ConstantMedium(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 330.0, 165.0), pWhite), glm::radians(15.0), YAxis), Vector3R(265.0, 0, 295.0)), new ConstantTexture(Vector3R(0, 0, 0)), 0.01));
 }
 
 Vector3R ComputeColor(const Ray &ray, Hittable *pWorld, int depth)
@@ -125,8 +121,9 @@ int main(int argc, char *argv[])
     // GenerateSimpleLightScene(list);
     GenerateCornelBoxScene(list);
     // GenerateSmokeCornelBoxScene(list);
-    // shared_ptr<Hittable> pWorld(new BVHNode(list.list.data(), list.list.size(), 0, 1.0));
-    // pWorld->DebugOutput();
+    StartTiming("BVH building");
+    // shared_ptr<Hittable> pWorld(new BVHNode(list.list.data(), list.list.size(), 0, 1.0, true));
+    EndTiming("BVH building");
 
     StartTiming("Ray tracing");
     for (size_t i = 0; i < nh; ++i)
@@ -138,7 +135,7 @@ int main(int argc, char *argv[])
             {
                 REAL u = (j + RandomReal()) / nw;
                 REAL v = (i + RandomReal()) / nh;
-                c += ComputeColor(camera.ShootRay(u, v), &list, 0);
+                c += ComputeColor(camera.ShootRay(u, v), &list/*pWorld.get()*/, 0);
             }
             c /= REAL(ns);
 

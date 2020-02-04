@@ -46,6 +46,7 @@ public:
         cout << "Scaling:\n"
              << matrix << "\n"
              << inverseMatrix << endl;
+        pHittable->DebugOutput();
     }
 
     shared_ptr<Hittable> pHittable = nullptr;

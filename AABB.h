@@ -33,6 +33,33 @@ public:
 
         return true;
     }
+    Vector3R GetDimension() const
+    {
+        return Vector3R(maxPoint - minPoint);
+    }
+    int GetLongestAxis() const
+    {
+        Vector3R dim(maxPoint - minPoint);
+        REAL maxDim = dim.x;
+        int maxAxis = XAxis;
+        if (dim.y > maxDim)
+        {
+            maxDim = dim.y;
+            maxAxis = YAxis;
+        }
+        if (dim.z > maxDim)
+        {
+            maxDim = dim.z;
+            maxAxis = ZAxis;
+        }
+        return maxAxis;
+    }
+    REAL GetArea() const
+    {
+        Vector3R dim(maxPoint - minPoint);
+
+        return 2.0 * (dim.x * dim.y + dim.x * dim.z + dim.y * dim.z);
+    }
 
     Vector3R minPoint = Vector3R(0, 0, 0);
     Vector3R maxPoint = Vector3R(0, 0, 0);

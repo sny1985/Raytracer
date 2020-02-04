@@ -69,7 +69,22 @@ public:
     }
     virtual void DebugOutput() const
     {
-        cout << "AARect: " << p0 << ", " << p1 << ", " << q0 << ", " << q1 << ", " << perpendicularAxis << ", " << k << endl;
+        string axisStr;
+        switch (perpendicularAxis)
+        {
+        case 0:
+            axisStr = "x";
+            break;
+        case 1:
+            axisStr = "y";
+            break;
+        case 2:
+            axisStr = "z";
+            break;
+        default:
+            break;
+        }
+        cout << "AARect: " << p0 << ", " << p1 << ", " << q0 << ", " << q1 << ", " << axisStr << ", " << k << endl;
     }
 
     REAL p0 = 0;

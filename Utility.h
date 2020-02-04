@@ -130,6 +130,7 @@ static map<string, chrono::system_clock::time_point> namedTimers;
 
 inline void StartTiming(const string &timerName)
 {
+    cout << timerName << " starts" << endl;
     auto it = namedTimers.find(timerName);
     if (it != namedTimers.end())
     {
@@ -143,9 +144,13 @@ inline void StartTiming(const string &timerName)
 
 inline void EndTiming(const string &timerName)
 {
-    auto endTime = chrono::system_clock::now();
-    auto dt = chrono::duration_cast<chrono::microseconds>(endTime - namedTimers[timerName]).count();
-    cout << timerName << " operation takes " << dt << "us" << endl;
+    auto it = namedTimers.find(timerName);
+    if (it != namedTimers.end())
+    {
+        auto endTime = chrono::system_clock::now();
+        auto dt = chrono::duration_cast<chrono::microseconds>(endTime - namedTimers[timerName]).count();
+        cout << timerName << " operation takes " << dt << "us" << endl;
+    }
 }
 
 inline vector<string> StringSplit(const string &str, const char delim)
