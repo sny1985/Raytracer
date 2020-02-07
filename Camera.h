@@ -34,7 +34,7 @@ public:
         vertical = 2.0f * focalLength * halfHeight * upward;
     }
     ~Camera() {}
-    Ray ShootRay(REAL u, REAL v)
+    Ray ShootRay(REAL u, REAL v) const
     {
         Vector3R rd(lensRadius * GenerateRandomPointOnUnitDisk());
         Vector3R offset(rd.x * rightward + rd.y * upward);

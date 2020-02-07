@@ -14,10 +14,17 @@
 #include "Rotation.h"
 #include "Scaling.h"
 #include "Volume.h"
+#include "ThreadPool.h"
 
 using namespace SNY;
 
-const int maxDepth = 5;
+const size_t maxDepth = 5;
+const size_t imageWidth = 600;
+const size_t imageHeight = 400;
+const size_t tileWidth = 64;
+const size_t tileHeight = 64;
+const size_t colorComponents = 3;
+const size_t samples = 50;
 
 void GenerateSimpleTextureScene(HittableList &list)
 {
@@ -72,7 +79,7 @@ void GenerateSmokeCornelBoxScene(HittableList &list)
     list.Add(new ConstantMedium(new Translation(new Rotation(new Box(Vector3R(0, 0, 0), Vector3R(165.0, 330.0, 165.0), pWhite), glm::radians(15.0), YAxis), Vector3R(265.0, 0, 295.0)), new ConstantTexture(Vector3R(0, 0, 0)), 0.01));
 }
 
-Vector3R ComputeColor(const Ray &ray, Hittable *pWorld, int depth)
+Vector3R ComputeColor(const Ray &ray, const Hittable *pWorld, size_t depth)
 {
     HitInfo hi;
     if (pWorld->Hit(ray, 0.001, FLT_MAX, hi))
@@ -98,14 +105,41 @@ Vector3R ComputeColor(const Ray &ray, Hittable *pWorld, int depth)
     }
 }
 
+size_t ComputeTile(const Camera &camera, const HittableList &list, vector<UCHAR> &data, size_t i, size_t j, size_t id)
+{
+    for (size_t ii = 0; ii < tileHeight; ++ii)
+    {
+        for (size_t jj = 0; jj < tileWidth; ++jj)
+        {
+            size_t row = i + ii;
+            if (row >= imageHeight)
+                continue;
+            size_t col = j + jj;
+            if (col >= imageWidth)
+                continue;
+
+            Vector3R c(0, 0, 0);
+            for (size_t k = 0; k < samples; ++k)
+            {
+                REAL u = (col + RandomReal()) / imageWidth;
+                REAL v = (row + RandomReal()) / imageHeight;
+                c += ComputeColor(camera.ShootRay(u, v), &list /*pWorld.get()*/, 0);
+            }
+            c /= REAL(samples);
+
+            size_t index = ((imageHeight - row - 1) * imageWidth + col) * colorComponents;
+            data[index] = int(255.99 * sqrt(c.x));
+            data[index + 1] = int(255.99 * sqrt(c.y));
+            data[index + 2] = int(255.99 * sqrt(c.z));
+        }
+    }
+
+    return id;
+}
+
 int main(int argc, char *argv[])
 {
-    size_t nw = 600;
-    size_t nh = 400;
-    size_t nc = 3;
-    size_t ns = 100;
-
-    vector<UCHAR> data(nw * nh * nc);
+    vector<UCHAR> data(imageWidth * imageHeight * colorComponents);
 
     // Vector3R camPos(3.0, 3.0, 2.0);
     // Vector3R lookAt(0.0, 0.0, -1.0);
@@ -114,7 +148,7 @@ int main(int argc, char *argv[])
     REAL focalLength = 10.0;
     REAL aperture = 0.0;
     REAL fov = 40.0;
-    Camera camera(camPos, lookAt, Vector3R(0, 1.0, 0), fov, float(nw) / float(nh), aperture, focalLength, 0, 1.0);
+    Camera camera(camPos, lookAt, Vector3R(0, 1.0, 0), fov, float(imageWidth) / float(imageHeight), aperture, focalLength, 0, 1.0);
 
     HittableList list;
     // GenerateSimpleTextureScene(list);
@@ -126,26 +160,25 @@ int main(int argc, char *argv[])
     EndTiming("BVH building");
 
     StartTiming("Ray tracing");
-    for (size_t i = 0; i < nh; ++i)
+    WaitableThreadPool threadPool(16);
+    vector<future<size_t>> futures;
+    size_t id = 0;
+    for (size_t i = 0; i < imageHeight; i += tileHeight)
     {
-        for (size_t j = 0; j < nw; ++j)
+        for (size_t j = 0; j < imageWidth; j += tileWidth)
         {
-            Vector3R c(0, 0, 0);
-            for (size_t k = 0; k < ns; ++k)
-            {
-                REAL u = (j + RandomReal()) / nw;
-                REAL v = (i + RandomReal()) / nh;
-                c += ComputeColor(camera.ShootRay(u, v), &list/*pWorld.get()*/, 0);
-            }
-            c /= REAL(ns);
-
-            size_t index = ((nh - i - 1) * nw + j) * nc;
-            data[index] = int(255.99 * sqrt(c.x));
-            data[index + 1] = int(255.99 * sqrt(c.y));
-            data[index + 2] = int(255.99 * sqrt(c.z));
+            futures.push_back(threadPool.Submit(bind(ComputeTile, ref(camera), ref(list), ref(data), i, j, id)));
+            // cout << "task " << id << " is running..." << endl;
+            ++id;
         }
     }
-    stbi_write_bmp("raytracer.bmp", nw, nh, nc, data.data());
+    // cout << "number of tasks: " << id << endl;
+    for (size_t i = 0; i < futures.size(); ++i)
+    {
+        futures[i].get();
+        // cout << "task " << futures[i].get() << " finished" << endl;
+    }
+    stbi_write_bmp("raytracer.bmp", imageWidth, imageHeight, colorComponents, data.data());
     EndTiming("Ray tracing");
 
     return 0;
