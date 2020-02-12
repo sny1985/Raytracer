@@ -36,7 +36,7 @@ class CheckerTexture : public Texture
 {
 public:
     CheckerTexture() {}
-    CheckerTexture(Texture *t1, Texture *t2) : pOdd(t1), pEven(t2)
+    CheckerTexture(shared_ptr<const Texture> pT1, shared_ptr<const Texture> pT2) : pOdd(pT1), pEven(pT2)
     {
         assert(pOdd);
         assert(pEven);
@@ -55,8 +55,8 @@ public:
         }
     }
 
-    shared_ptr<Texture> pOdd = nullptr;
-    shared_ptr<Texture> pEven = nullptr;
+    shared_ptr<const Texture> pOdd = nullptr;
+    shared_ptr<const Texture> pEven = nullptr;
 };
 
 class PerlinTexture : public Texture

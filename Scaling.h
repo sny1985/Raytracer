@@ -9,7 +9,7 @@ class Scaling : public Hittable
 {
 public:
     Scaling() {}
-    Scaling(Hittable *pH, const Vector3R &scale) : pHittable(pH)
+    Scaling(shared_ptr<const Hittable> pH, const Vector3R &scale) : pHittable(pH)
     {
         matrix = glm::scale(Matrix4R(1.0), scale);
         inverseMatrix = glm::inverse(matrix);
@@ -41,6 +41,14 @@ public:
     {
         return box;
     }
+    virtual REAL ComputePDF(const Vector3R& origin, const Vector3R& direction) const
+    {
+        return pHittable->ComputePDF(origin, direction);
+    }
+    virtual Vector3R GenerateRandomDirection(const Vector3R& origin) const
+    {
+        return pHittable->GenerateRandomDirection(origin);
+    }
     virtual void DebugOutput() const
     {
         cout << "Scaling:\n"
@@ -49,7 +57,7 @@ public:
         pHittable->DebugOutput();
     }
 
-    shared_ptr<Hittable> pHittable = nullptr;
+    shared_ptr<const Hittable> pHittable = nullptr;
     Matrix4R matrix = Matrix4R(1.0);
     Matrix4R inverseMatrix = Matrix4R(1.0);
     AABB3D box = AABB3D(Vector3R(0, 0, 0), Vector3R(0, 0, 0));

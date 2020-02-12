@@ -9,7 +9,7 @@ class Rotation : public Hittable
 {
 public:
     Rotation() {}
-    Rotation(Hittable *pH, REAL angle, int axis) : pHittable(pH)
+    Rotation(shared_ptr<const Hittable> pH, REAL angle, int axis) : pHittable(pH)
     {
         Vector3R axisVector;
         switch (axis)
@@ -39,9 +39,9 @@ public:
             {
                 for (int k = 0; k < 2; ++k)
                 {
-                    REAL x = i * b.maxPoint.x + (1 - i) * b.minPoint.x;
-                    REAL y = j * b.maxPoint.y + (1 - j) * b.minPoint.y;
-                    REAL z = k * b.maxPoint.z + (1 - k) * b.minPoint.z;
+                    REAL x = i * b.maxPoint.x + (1.0 - i) * b.minPoint.x;
+                    REAL y = j * b.maxPoint.y + (1.0 - j) * b.minPoint.y;
+                    REAL z = k * b.maxPoint.z + (1.0 - k) * b.minPoint.z;
                     Vector4R newPoint = matrix * Vector4R(x, y, z, 1.0);
                     Vector3R tester(newPoint.xyz());
                     for (int c = 0; c < 3; ++c)
@@ -84,6 +84,14 @@ public:
     {
         return box;
     }
+    virtual REAL ComputePDF(const Vector3R& origin, const Vector3R& direction) const
+    {
+        return pHittable->ComputePDF(origin, direction);
+    }
+    virtual Vector3R GenerateRandomDirection(const Vector3R& origin) const
+    {
+        return pHittable->GenerateRandomDirection(origin);
+    }
     virtual void DebugOutput() const
     {
         cout << "Rotation:\n"
@@ -92,7 +100,7 @@ public:
         pHittable->DebugOutput();
     }
 
-    shared_ptr<Hittable> pHittable = nullptr;
+    shared_ptr<const Hittable> pHittable = nullptr;
     Matrix4R matrix = Matrix4R(1.0);
     Matrix4R inverseMatrix = Matrix4R(1.0);
     AABB3D box = AABB3D(Vector3R(0, 0, 0), Vector3R(0, 0, 0));

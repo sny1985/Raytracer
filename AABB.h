@@ -35,7 +35,7 @@ public:
     }
     Vector3R GetDimension() const
     {
-        return Vector3R(maxPoint - minPoint);
+        return maxPoint - minPoint;
     }
     int GetLongestAxis() const
     {

@@ -10,7 +10,7 @@ class AARect : public Hittable
 {
 public:
     AARect() {}
-    AARect(REAL _p0, REAL _p1, REAL _q0, REAL _q1, REAL _k, int axis, bool isFlipNormal, shared_ptr<Material> pMat) : p0(_p0), p1(_p1), q0(_q0), q1(_q1), k(_k), perpendicularAxis(axis), pMaterial(pMat)
+    AARect(REAL _p0, REAL _p1, REAL _q0, REAL _q1, REAL _k, int axis, bool isFlipNormal, shared_ptr<const Material> pMat) : p0(_p0), p1(_p1), q0(_q0), q1(_q1), k(_k), perpendicularAxis(axis), pMaterial(pMat)
     {
         pAxis = (perpendicularAxis + 1) % 3;
         qAxis = (perpendicularAxis + 2) % 3;
@@ -67,6 +67,37 @@ public:
             return AABB3D();
         }
     }
+    virtual REAL ComputePDF(const Vector3R &origin, const Vector3R &direction) const
+    {
+        HitInfo hi;
+        if (Hit(Ray(origin, direction, 0), 0.001, FLT_MAX, hi))
+        {
+            REAL area = (p1 - p0) * (q1 - q0);
+            REAL directionLength = glm::length(direction);
+            REAL squaredDistance = hi.t * hi.t * directionLength * directionLength;
+            REAL cosine = glm::abs(glm::dot(direction, hi.normal) / directionLength);
+            return squaredDistance / (cosine * area);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    virtual Vector3R GenerateRandomDirection(const Vector3R &origin) const
+    {
+        REAL p = p0 + RandomReal() * (p1 - p0);
+        REAL q = q0 + RandomReal() * (q1 - q0);
+        switch (perpendicularAxis)
+        {
+        case XAxis:
+            return Vector3R(k, p, q) - origin;
+        case YAxis:
+            return Vector3R(p, k, q) - origin;
+        case ZAxis:
+            return Vector3R(p, q, k) - origin;
+        }
+        return Vector3R(0, 0, 0);
+    }
     virtual void DebugOutput() const
     {
         string axisStr;
@@ -96,7 +127,7 @@ public:
     int pAxis = -1;
     int qAxis = -1;
     Vector3R normal;
-    shared_ptr<Material> pMaterial = nullptr;
+    shared_ptr<const Material> pMaterial = nullptr;
 };
 } // namespace SNY
 

@@ -10,7 +10,7 @@ class Sphere : public Hittable
 {
 public:
     Sphere() {}
-    Sphere(const Vector3R &c0, const Vector3R &c1, REAL r, REAL t0, REAL t1, Material *pMat) : center0(c0), center1(c1), radius(r), time0(t0), time1(t1), pMaterial(pMat) {}
+    Sphere(const Vector3R &c0, const Vector3R &c1, REAL r, REAL t0, REAL t1, shared_ptr<const Material> pMat) : center0(c0), center1(c1), radius(r), time0(t0), time1(t1), pMaterial(pMat) {}
     virtual ~Sphere() {}
     virtual bool Hit(const Ray &r, REAL minT, REAL maxT, HitInfo &hi) const
     {
@@ -52,6 +52,28 @@ public:
                     GetCenter(time1) + Vector3R(radius, radius, radius));
         return CombineBoundingBox(box0, box1);
     }
+    REAL ComputePDF(const Vector3R &origin, const Vector3R &direction) const
+    {
+        HitInfo hi;
+        if (Hit(Ray(origin, direction, 0), 0.001, FLT_MAX, hi))
+        {
+            REAL length = glm::length(center0 - origin);
+            REAL maxCosTheta = sqrt(1.0 - radius * radius / (length * length));
+            REAL solidAngle = glm::two_pi<REAL>() * (1.0 - maxCosTheta);
+            return 1.0 / solidAngle;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    Vector3R GenerateRandomDirection(const Vector3R &origin) const
+    {
+        Vector3R direction = center0 - origin;
+        ONB uvw(direction);
+        REAL directionLength = glm::length(direction);
+        return uvw.TransformFromLocal(GenerateRandomToSphere(radius, directionLength * directionLength));
+    }
     virtual void DebugOutput() const
     {
         cout << "Sphere: " << center0 << ", " << radius << endl;
@@ -71,7 +93,7 @@ public:
     {
         REAL phi = atan2(n.z, n.x);
         REAL theta = asin(n.y);
-        return Vector2R(1.0 - (phi + glm::pi<REAL>()) / glm::two_pi<REAL>(), (theta + glm::half_pi<REAL>()) / glm::pi<REAL>());
+        return Vector2R(1.0 - (phi + glm::pi<REAL>()) * glm::one_over_two_pi<REAL>(), (theta + glm::half_pi<REAL>()) * glm::one_over_pi<REAL>());
     }
 
     Vector3R center0 = Vector3R(0, 0, 0);
@@ -79,7 +101,7 @@ public:
     REAL radius = 0;
     REAL time0 = 0;
     REAL time1 = 0;
-    shared_ptr<Material> pMaterial = nullptr;
+    shared_ptr<const Material> pMaterial = nullptr;
 };
 } // namespace SNY
 

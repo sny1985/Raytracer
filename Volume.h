@@ -10,7 +10,7 @@ class ConstantMedium : public Hittable
 {
 public:
     ConstantMedium() {}
-    ConstantMedium(Hittable *pB, Texture *pPF, REAL d) : pBoundary(pB), pPhaseFunction(new Isotropic(pPF)), density(d) {}
+    ConstantMedium(shared_ptr<const Hittable> pB, shared_ptr<const Texture> pPF, REAL d) : pBoundary(pB), pPhaseFunction(new Isotropic(pPF)), density(d) {}
     virtual ~ConstantMedium() {}
     virtual bool Hit(const Ray &r, REAL minT, REAL maxT, HitInfo &hi) const
     {
@@ -63,13 +63,21 @@ public:
     {
         return pBoundary->GetBoundingBox(time0, time1);
     }
+    virtual REAL ComputePDF(const Vector3R& origin, const Vector3R& direction) const
+    {
+        return pBoundary->ComputePDF(origin, direction);
+    }
+    virtual Vector3R GenerateRandomDirection(const Vector3R& origin) const
+    {
+        return pBoundary->GenerateRandomDirection(origin);
+    }
     virtual void DebugOutput() const
     {
         cout << "Constant Medium: " << density << endl;
     }
 
-    shared_ptr<Hittable> pBoundary = nullptr;
-    shared_ptr<Material> pPhaseFunction = nullptr;
+    shared_ptr<const Hittable> pBoundary = nullptr;
+    shared_ptr<const Material> pPhaseFunction = nullptr;
     REAL density = 1.0;
 };
 } // namespace SNY

@@ -29,20 +29,20 @@ class BVHNode : public Hittable
 {
 public:
     BVHNode() {}
-    BVHNode(shared_ptr<Hittable> *hl, int n, REAL time0, REAL time1)
+    BVHNode(shared_ptr<const Hittable> *hl, int n, REAL time0, REAL time1)
     {
         int axis = int(3 * RandomReal());
 
         switch (axis)
         {
         case 0:
-            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareX);
+            qsort(hl, n, sizeof(shared_ptr<const Hittable>), CompareX);
             break;
         case 1:
-            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareY);
+            qsort(hl, n, sizeof(shared_ptr<const Hittable>), CompareY);
             break;
         case 2:
-            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareZ);
+            qsort(hl, n, sizeof(shared_ptr<const Hittable>), CompareZ);
             break;
         default:
             break;
@@ -71,7 +71,7 @@ public:
             box = CombineBoundingBox(box, rightBox);
         }
     }
-    BVHNode(shared_ptr<Hittable> *hl, int n, REAL time0, REAL time1, bool enableSAH)
+    BVHNode(shared_ptr<const Hittable> *hl, int n, REAL time0, REAL time1, bool enableSAH)
     {
         for (int i = 0; i < n; ++i)
         {
@@ -80,13 +80,13 @@ public:
         switch (box.GetLongestAxis())
         {
         case 0:
-            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareX);
+            qsort(hl, n, sizeof(shared_ptr<const Hittable>), CompareX);
             break;
         case 1:
-            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareY);
+            qsort(hl, n, sizeof(shared_ptr<const Hittable>), CompareY);
             break;
         case 2:
-            qsort(hl, n, sizeof(shared_ptr<Hittable>), CompareZ);
+            qsort(hl, n, sizeof(shared_ptr<const Hittable>), CompareZ);
             break;
         default:
             break;
@@ -187,7 +187,14 @@ public:
     {
         return box;
     }
-
+    virtual REAL ComputePDF(const Vector3R& origin, const Vector3R& direction) const
+    {
+        return 0;
+    }
+    virtual Vector3R GenerateRandomDirection(const Vector3R& origin) const
+    {
+        return Vector3R(0, 0, 0);
+    }
     virtual void DebugOutput() const
     {
         if (pLeft)
@@ -200,8 +207,8 @@ public:
         }
     }
 
-    shared_ptr<Hittable> pLeft = nullptr;
-    shared_ptr<Hittable> pRight = nullptr;
+    shared_ptr<const Hittable> pLeft = nullptr;
+    shared_ptr<const Hittable> pRight = nullptr;
     AABB3D box = AABB3D(Vector3R(0, 0, 0), Vector3R(0, 0, 0));
 };
 } // namespace SNY

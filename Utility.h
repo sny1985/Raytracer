@@ -25,6 +25,16 @@ inline REAL RandomReal()
     return rand() / (RAND_MAX + 1.0);
 }
 
+inline REAL DeNaN(const REAL c)
+{
+    REAL temp = c;
+    if (!(temp == temp))
+    {
+        temp = 0;
+    }
+    return temp;
+}
+
 inline string GetCurrentTimeStr()
 {
     using chrono::system_clock;

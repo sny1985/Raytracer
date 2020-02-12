@@ -11,7 +11,7 @@ class Material;
 struct HitInfo
 {
     HitInfo() {}
-    HitInfo(REAL _t, const Vector2R &_uv, const Vector3R &p, const Vector3R &n, shared_ptr<Material> pMat) : t(_t), uv(_uv), position(p), normal(n), pMaterial(pMat)
+    HitInfo(REAL _t, const Vector2R &_uv, const Vector3R &p, const Vector3R &n, shared_ptr<const Material> pMat) : t(_t), uv(_uv), position(p), normal(n), pMaterial(pMat)
     {
         assert(pMaterial);
     }
@@ -21,7 +21,7 @@ struct HitInfo
     Vector2R uv = Vector2R(0, 0);
     Vector3R position = Vector3R(0, 0, 0);
     Vector3R normal = Vector3R(0, 0, 0);
-    shared_ptr<Material> pMaterial = nullptr;
+    shared_ptr<const Material> pMaterial = nullptr;
 };
 
 class Hittable
@@ -31,7 +31,8 @@ public:
     virtual ~Hittable() {}
     virtual bool Hit(const Ray &r, REAL minT, REAL maxT, HitInfo &hi) const = 0;
     virtual AABB3D GetBoundingBox(REAL time0, REAL time1) const = 0;
-
+    virtual REAL ComputePDF(const Vector3R& origin, const Vector3R& direction) const = 0;
+    virtual Vector3R GenerateRandomDirection(const Vector3R& origin) const = 0;
     virtual void DebugOutput() const = 0;
 };
 } // namespace SNY

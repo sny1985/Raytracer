@@ -12,10 +12,10 @@ public:
     virtual ~HittableList()
     {
     }
-    void Add(Hittable *pH)
+    void Add(shared_ptr<const Hittable> pH)
     {
         assert(pH);
-        list.push_back(shared_ptr<Hittable>(pH));
+        list.push_back(pH);
     }
     virtual bool Hit(const Ray &r, REAL minT, REAL maxT, HitInfo &hi) const
     {
@@ -43,6 +43,27 @@ public:
         }
         return entireBox;
     }
+    REAL ComputePDF(const Vector3R &origin, const Vector3R &direction) const
+    {
+        if (list.empty())
+        {
+            return 0;
+        }
+        REAL sum = 0;
+        for (size_t i = 0; i < list.size(); ++i)
+        {
+            sum += list[i]->ComputePDF(origin, direction);
+        }
+        return sum / list.size();
+    }
+    Vector3R GenerateRandomDirection(const Vector3R &origin) const
+    {
+        if (list.empty())
+        {
+            return Vector3R(0, 0, 0);
+        }
+        return list[static_cast<int>(RandomReal() * list.size())]->GenerateRandomDirection(origin);
+    }
     virtual void DebugOutput() const
     {
         for (int i = 0; i < list.size(); ++i)
@@ -51,7 +72,7 @@ public:
         }
     }
 
-    vector<shared_ptr<Hittable>> list;
+    vector<shared_ptr<const Hittable>> list;
 };
 } // namespace SNY
 

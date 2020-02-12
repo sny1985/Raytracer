@@ -28,6 +28,42 @@ typedef glm::ivec2 Vector2i;
 typedef glm::ivec3 Vector3i;
 typedef glm::ivec4 Vector4i;
 
+inline Vector2R DeNaN(const Vector2R &c)
+{
+    Vector2R temp = c;
+    if (!(temp[0] == temp[0]))
+        temp[0] = 0;
+    if (!(temp[1] == temp[1]))
+        temp[1] = 0;
+    return temp;
+}
+
+inline Vector3R DeNaN(const Vector3R &c)
+{
+    Vector3R temp = c;
+    if (!(temp[0] == temp[0]))
+        temp[0] = 0;
+    if (!(temp[1] == temp[1]))
+        temp[1] = 0;
+    if (!(temp[2] == temp[2]))
+        temp[2] = 0;
+    return temp;
+}
+
+inline Vector4R DeNaN(const Vector4R &c)
+{
+    Vector4R temp = c;
+    if (!(temp[0] == temp[0]))
+        temp[0] = 0;
+    if (!(temp[1] == temp[1]))
+        temp[1] = 0;
+    if (!(temp[2] == temp[2]))
+        temp[2] = 0;
+    if (!(temp[3] == temp[3]))
+        temp[3] = 0;
+    return temp;
+}
+
 inline ostream &operator<<(ostream &os, const Vector2i &v)
 {
     os << "Vector2i: (" << v.x << ", " << v.y << ")";
